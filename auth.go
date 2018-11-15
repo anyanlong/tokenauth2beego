@@ -18,22 +18,24 @@
 package tokenauth2beego
 
 import (
+	"common/lib/keycrypt"
+	"encoding/json"
 	"fmt"
-	"github.com/anyanlong/tokenauth"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/context"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
+	"github.com/anyanlong/tokenauth"
 )
 
 var (
-	ERR_ServerError = tokenauth.ValidationError{Code: "-1", Msg: "System error , Please retry"}
-	ERR_UserIDEmpty = tokenauth.ValidationError{Code: "41020", Msg: "UserID is empty"}
+	ERR_ServerError = tokenauth.ValidationError{Code: 10001, Msg: "System error , Please retry"}
+	ERR_UserIDEmpty = tokenauth.ValidationError{Code: 41020, Msg: "UserID is empty"}
 )
 
 const (
@@ -44,7 +46,7 @@ var (
 	EnableCookie = false // Save token string to cookie if enableCookie=true.
 )
 
-func init() {
+func Init(key string) (err error) {
 
 	// Get Config
 	confs, _ := beego.AppConfig.GetSection("tokenauth")
@@ -68,6 +70,26 @@ func init() {
 			storeName = v
 		}
 		if v, ok := confs["storeconf"]; ok {
+			if len(key) > 0 {
+				m := map[string]string{}
+				err = json.Unmarshal([]byte(v), &m)
+				if err != nil {
+					return
+				}
+				if pass, ok := m["auth"]; ok && len(pass) > 0 {
+					pass, err = keycrypt.Decode(key, pass)
+					if err != nil {
+						return
+					}
+					m["auth"] = pass
+					c, err := json.Marshal(m)
+					if err != nil {
+						return err
+					}
+					v = string(c)
+				}
+
+			}
 			storeConf = v
 		}
 		if v, ok := confs["tokenperiod"]; ok {
@@ -99,6 +121,8 @@ func init() {
 
 	// Keep close db when process exsit.
 	deferCloseStore()
+
+	return nil
 }
 
 // Define event to close Store
@@ -128,12 +152,13 @@ func (a *Automatic) CheckToken(req *http.Request) (token *tokenauth.Token, err e
 
 	tokenString := ""
 	// Look for an Authorization header
-	if ah := req.Header.Get("Authorization"); len(ah) > 0 {
+	if ah := req.Header.Get(TokenFieldName); len(ah) > 0 {
 		// Should be a access token
-		fieldLen := len(TokenFieldName)
-		if len(ah) > fieldLen+1 && ah[fieldLen] == ' ' && strings.HasPrefix(ah, TokenFieldName) {
-			tokenString = ah[fieldLen+1:]
-		}
+		//fieldLen := len(TokenFieldName)
+		//if len(ah) > fieldLen+1 && ah[fieldLen] == ' ' && strings.HasPrefix(ah, TokenFieldName) {
+		//	tokenString = ah[fieldLen+1:]
+		//
+		tokenString = ah
 	}
 
 	// Look for "access_token" parameter
@@ -157,6 +182,7 @@ func (a *Automatic) CheckToken(req *http.Request) (token *tokenauth.Token, err e
 		return nil, tokenauth.ERR_TokenEmpty
 	}
 	// Get token.
+	fmt.Printf("check token get:%s\n", tokenString)
 	token, err = tokenauth.ValidateToken(tokenString)
 	return
 }
@@ -185,13 +211,19 @@ func (a *Automatic) ConvertoCookie(token *tokenauth.Token) *http.Cookie {
 	if token == nil {
 		return nil
 	}
+	// cookie 保存一天
+	deadline := token.DeadLine
+	if deadline < time.Now().Add(time.Hour*24).Unix() {
+		deadline = time.Now().Add(time.Hour * 24).Unix()
+	}
 	return &http.Cookie{
-		Name:     TokenFieldName,
+		Domain:  beego.AppConfig.String("domain"), // optional
+		Name:    TokenFieldName,
 		Value:    token.Value,
 		Path:     "/",
-		Expires:  time.Unix(token.DeadLine, 0),
-		MaxAge:   int(token.DeadLine - time.Now().Unix()),
-		Secure:   true,
+		Expires: time.Unix(deadline, 0),
+		MaxAge:  int(deadline - time.Now().Unix()),
+		//Secure:   true,
 		HttpOnly: true,
 	}
 }
@@ -208,13 +240,13 @@ func (a *Automatic) ReturnFailueInfo(err error, ctx *context.Context) {
 	errInfo, ok := err.(tokenauth.ValidationError)
 	if !ok {
 		errInfo = ERR_ServerError
-		if beego.RunMode == "dev" {
+		if beego.BConfig.RunMode == "dev" {
 			errInfo.Msg = fmt.Sprintf("%s,%s", errInfo.Msg, err.Error())
 		}
 	}
 
 	hasIndent := false
-	if beego.RunMode == "dev" {
+	if beego.BConfig.RunMode == "dev" {
 		hasIndent = true
 	}
 

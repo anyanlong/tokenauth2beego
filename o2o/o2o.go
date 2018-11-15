@@ -10,6 +10,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"net/http"
+	"strings"
 )
 
 var Auth *O2OAutomatic
@@ -38,22 +39,25 @@ func NewAuthFileter(tokenPeriod uint64, secretFunc tokenauth.GenerateSecretStrin
 	Auth.Audience = audience
 
 	return func(ctx *context.Context) {
-		if _, err := Auth.CheckToken(ctx.Request); err != nil {
-			Auth.ReturnFailueInfo(err, ctx)
+		if token, err := Auth.CheckToken(ctx.Request); err != nil {
+			if strings.Index(ctx.Request.URL.Path, "/n") != 3 {
+				Auth.ReturnFailueInfo(err, ctx)
+			}
+		} else {
+			ctx.Request.Header.Add("uid", token.SingleID)
 		}
 	}
 }
 
 // Get and Save a new token. this user's other token will be destory.
 // Set Authorization to header,if w is not nil.
-func (a *O2OAutomatic) NewSingleToken(userID string, w ...http.ResponseWriter) (token *tokenauth.Token, err error) {
-
+func (a *O2OAutomatic) NewSingleToken(userID , groupID string,info string, w ...http.ResponseWriter) (token *tokenauth.Token, err error) {
 	if len(userID) == 0 {
 		return nil, tokenauth2beego.ERR_UserIDEmpty
 	}
 
 	// New token
-	token, err = tokenauth.NewSingleToken(userID, a.Audience, a.TokenFunc)
+	token, err = tokenauth.NewSingleToken(userID, groupID,info, a.Audience, a.TokenFunc)
 	if err != nil {
 		return
 	}

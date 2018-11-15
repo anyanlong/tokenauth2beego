@@ -1,9 +1,9 @@
 # Tokenauth2beego
-使用`github.com/ysqi/tokenauth`给 Beego 写的 token 验证插件，支持多种方式验证。
+使用`github.com/anyanlong/tokenauth`给 Beego 写的 token 验证插件，支持多种方式验证。
 
 # 安装
 ```shell
-go get github.com/ysqi/tokenauth2beego
+go get github.com/anyanlong/tokenauth2beego
 ```
 
 # TokenAuth包介绍
@@ -23,7 +23,7 @@ go get github.com/ysqi/tokenauth2beego
 ```go
 import(
     "github.com/astaxie/beego"
-    "github.com/ysqi/tokenauth2beego/o2o"
+    "github.com/anyanlong/tokenauth2beego/o2o"
 )
 
 func main(){
@@ -55,5 +55,3 @@ Beego API 应用通过Token进行权限验证（待提供）
 
 
 
-
-[TokenAuthDoc]:https://github.com/ysqi/tokenauth/blob/master/README.md
