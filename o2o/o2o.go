@@ -5,10 +5,10 @@
 package o2o
 
 import (
+	"github.com/anyanlong/tokenauth"
+	"github.com/anyanlong/tokenauth2beego"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"github.com/ysqi/tokenauth"
-	"github.com/ysqi/tokenauth2beego"
 	"net/http"
 )
 

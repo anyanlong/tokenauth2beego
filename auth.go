@@ -19,9 +19,9 @@ package tokenauth2beego
 
 import (
 	"fmt"
+	"github.com/anyanlong/tokenauth"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"github.com/ysqi/tokenauth"
 	"net/http"
 	"os"
 	"os/signal"
