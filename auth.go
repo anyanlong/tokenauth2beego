@@ -2,7 +2,7 @@
 // Example:
 //	import(
 //		"github.com/astaxie/beego"
-//		"github.com/ysqi/tokenauth2beego/o2o"
+//		"github.com/anyanlong/tokenauth2beego/o2o"
 //	)
 //
 //	func main(){
@@ -28,9 +28,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/anyanlong/tokenauth"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"github.com/anyanlong/tokenauth"
 )
 
 var (
@@ -219,8 +219,8 @@ func (a *Automatic) ConvertoCookie(token *tokenauth.Token) *http.Cookie {
 	return &http.Cookie{
 		Domain:  beego.AppConfig.String("domain"), // optional
 		Name:    TokenFieldName,
-		Value:    token.Value,
-		Path:     "/",
+		Value:   token.Value,
+		Path:    "/",
 		Expires: time.Unix(deadline, 0),
 		MaxAge:  int(deadline - time.Now().Unix()),
 		//Secure:   true,

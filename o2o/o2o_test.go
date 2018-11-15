@@ -51,7 +51,7 @@ func (s *S) TearDownSuite(c *C) {
 
 func (s *S) Test_NewSingleToken(c *C) {
 
-	userID := "ysqi"
+	userID := "hmc"
 	token, err := o2o.Auth.NewSingleToken(userID)
 	c.Assert(err, IsNil)
 	c.Assert(token, NotNil)
@@ -119,7 +119,7 @@ func (s *S) Test_ErrorToken_04(c *C) {
 
 func (s *S) Test_RealToken_Header(c *C) {
 
-	userID := "ysqi"
+	userID := "hmc"
 	recorder := httptest.NewRecorder()
 	token, err := o2o.Auth.NewSingleToken(userID, recorder)
 	c.Assert(err, IsNil)
@@ -136,7 +136,7 @@ func (s *S) Test_RealToken_Header(c *C) {
 
 func (s *S) Test_RealToken_FromPost(c *C) {
 
-	userID := "ysqi"
+	userID := "hmc"
 	recorder := httptest.NewRecorder()
 	token, err := o2o.Auth.NewSingleToken(userID, recorder)
 	c.Assert(err, IsNil)
@@ -155,7 +155,7 @@ func (s *S) Test_RealToken_FromPost(c *C) {
 
 func (s *S) Test_RealToken_FromGet(c *C) {
 
-	userID := "ysqi"
+	userID := "hmc"
 	recorder := httptest.NewRecorder()
 	token, err := o2o.Auth.NewSingleToken(userID, recorder)
 	c.Assert(err, IsNil)
@@ -172,7 +172,7 @@ func (s *S) Test_RealToken_FromCookie(c *C) {
 
 	tokenauth2beego.EnableCookie = true
 
-	userID := "ysqi"
+	userID := "hmc"
 	recorder := httptest.NewRecorder()
 	token, err := o2o.Auth.NewSingleToken(userID, recorder)
 	c.Assert(err, IsNil)
